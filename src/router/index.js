@@ -14,6 +14,7 @@ const router = createRouter({
             meta: { requireAuth: true },
             children: [
                 { path: '/', name: 'Main', component: () => import('../views/Main.vue')},
+                { path: '/users', name: 'User', component: () => import('../views/user/List.vue'), meta: { requireAuth: true } },
                 { path: '/parameters', name: 'Parameter', component: () => import('../views/parameter/List.vue'), meta: { requireAuth: true } },
                 { path: '/parameters/new', name: 'ParameterCreate', component: () => import('../views/parameter/New.vue'), meta: { requireAuth: true } },
                 { path: '/devices', name: 'Device', component: () => import('../views/device/List.vue'), meta: { requireAuth: true } },

@@ -46,6 +46,7 @@ const store = createStore({
                 commit('request')
                 auth('signin', data)
                 .then(res => {
+                    if ( res.message ) return reject(res.message)
                     const user = Object.assign({}, res)
                     localStorage.setItem('user', JSON.stringify(user))
                     commit('auth_success', res)

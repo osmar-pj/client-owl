@@ -60,9 +60,13 @@ export default {
         const devices = ref()
 
         const createDevice = async () => {
-            await store.dispatch('post', { data: { mac: mac.value, place: place.value }, route: 'device' }) // para guardar en la base de datos
-            store.commit('saveDevice', { mac: mac.value, place: place.value }) // para guardar datos en una variable vuex
-            router.replace('/devices/param')
+            try {
+                await store.dispatch('post', { data: { mac: mac.value, place: place.value }, route: 'device' }) // para guardar en la base de datos
+                store.commit('saveDevice', { mac: mac.value, place: place.value }) // para guardar datos en una variable vuex
+                router.replace('/devices/param')
+            } catch (error) {
+                console.log(error, 'EROROROROR')
+            }
         }
 
         return { mac, place, devices, createDevice, router }

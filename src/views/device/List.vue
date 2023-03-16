@@ -26,15 +26,12 @@
                         </span>
 					</div>
                 </template>
-
-                <!-- <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column> -->
                 <Column field="_id" header="Code" :sortable="true" style="min-width:6rem">
                     <template #body="slotProps">
                         <!-- get last 6 string of a character -->
-                        {{ slotProps.data._id.substring(slotProps.data._id.length - 6) }}
+                        {{ slotProps.data._id.substring(slotProps.data._id.length - 4) }}
                     </template>
                 </Column>
-                
                 <Column field="mac" header="Mac" :sortable="true" style="min-width:8rem">
                     <template #body="slotProps">
                         {{ slotProps.data.mac }}
@@ -47,8 +44,8 @@
                 </Column>
                 <Column field="fixed" header="Parametros" :sortable="true" style="min-width:10rem">
                     <template #body="slotProps">
-                        <div class="flex align-items-center flex-column sm:flex-row" v-for="p in slotProps.data.fixed">
-                            <Chip :label="p.parameter" class="mr-2 mb-2 custom-chip" />
+                        <div class="flex align-items-center flex-column sm:flex-row" v-for="p in slotProps.data.s">
+                            <Chip :label="p.nm" class="mr-2 mb-2 custom-chip text-xs" />
                         </div>
                     </template>
                 </Column>
@@ -63,20 +60,25 @@
 
         <Dialog v-model:visible="deviceDialog" :style="{width: '450px'}" header="Detalles de parametro" :modal="true" class="p-fluid">
             <div class="surface-section px-4 py-5 md:px-6 lg:px-8">
-                <label for="mac" class="block text-900 font-medium mb-2">Mac</label>
-                <InputText id="mac" type="text" class="w-full mb-3" v-model="mac" />
-
+                <h3 class="text-blue-500"> {{ mac }} </h3>
                 <label for="place" class="block text-900 font-medium mb-2">Lugar</label>
                 <InputText id="place" type="text" class="w-full mb-3" v-model="place" />
-
-                <label for="fixed" class="block text-900 font-medium mb-2">Parametros</label>
-                <!-- Incluir una forma de edicion interno para edicion de parametros hacia el chip -->
-                <MultiSelect class="w-full mb-5" v-model="fixed" :options="parameters" optionLabel="parameter" placeholder="Selecciona parametros" display="chip" />
-        </div>
+                <label for="parametros" class="block text-900 font-medium mb-2">Parametros</label>
+                <DataTable :value="s" datakey="id" responsiveLayout="scroll">
+                    <Column field="nm"> </Column>
+                    <Column>
+                        <template #body="slotProps">
+                            <Button class="p-button p-component p-button-text p-button-icon-only p-button-icon-left" @click="selectedParameter(slotProps)">
+                                <span class="p-button-icon-left pi pi-angle-right"></span>
+                            </Button>
+                        </template>
+                    </Column>
+                </DataTable>
+            </div>
 
             <template #footer>
                 <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog"/>
-                <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveDevice" />
+                <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveDevice" />
             </template>
         </Dialog>
 
@@ -87,7 +89,7 @@
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteDeviceDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteDevice" />
+                <Button label="Si" icon="pi pi-check" class="p-button-text" @click="deleteDevice" />
             </template>
         </Dialog>
 
@@ -98,9 +100,38 @@
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteDevicesDialog = false"/>
-                <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedProducts" />
+                <Button label="Si" icon="pi pi-check" class="p-button-text" @click="deleteSelectedProducts" />
             </template>
         </Dialog>
+
+        <Dialog header="Parametrizar" v-model:visible="displayModal" :modal="true">
+            <div class="field">
+                <div class="surface-section px-4 py-5 md:px-6 lg:px-8">
+                    <label for="description" class="block text-900 font-medium mb-2">Descripcion</label>
+                    <InputText id="description" type="text" class="w-auto mb-3" v-model="nm" />
+
+                    <label for="icon" class="block text-900 font-medium mb-2">Icono</label>
+                    <InputText id="icon" type="text" class="w-auto mb-3" v-model="icon"/>
+
+                    <label for="unit" class="block text-900 font-medium mb-2">Unidad</label>
+                    <InputText id="unit" type="text" class="w-auto mb-3" v-model="unit"/>
+
+                    <label for="unit" class="block text-900 font-medium mb-2">Valor inicial</label>
+                    <InputNumber id="initial" class="w-auto mb-3" v-model="x0" mode="decimal" :minFractionDigits="1"/>
+
+                    <label for="max" class="block text-900 font-medium mb-2">Max</label>
+                    <InputNumber id="max" class="w-auto mb-3" v-model="max" mode="decimal" :minFractionDigits="1"/>
+
+                    <label for="min" class="block text-900 font-medium mb-2">Min</label>
+                    <InputNumber id="min" class="w-auto mb-3" v-model="min" mode="decimal" :minFractionDigits="1"/>
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Cancel" class="p-button-text" @click="displayModal = false"></Button>
+                <Button label="Guardar" @click.prevent="saveParameter"></Button>
+            </template>
+        </Dialog>
+        
         <Toast/>
 	</div>
 </template>
@@ -126,6 +157,7 @@ export default {
         const mac = ref()
         const place = ref()
         const fixed = ref()
+        const s = ref()
 
         const parameters = ref([])
         
@@ -134,7 +166,16 @@ export default {
         const deviceDialog = ref(false)
         const deleteDeviceDialog = ref(false)
         const deleteDevicesDialog = ref(false)
-        const selectedProducts = ref();
+        const selectedProducts = ref()
+        const displayModal = ref(false)
+        const nm = ref()
+        const icon = ref()
+        const unit = ref()
+        const x0 = ref()
+        const max = ref()
+        const min = ref()
+        let index = 0
+
         const filters = ref({
             'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
         });
@@ -152,7 +193,31 @@ export default {
             mac.value = p.mac
             place.value = p.place
             fixed.value = p.fixed
+            s.value = p.s
             deviceDialog.value = true;
+        }
+        const selectedParameter = (data) => {
+            index = data.index
+            nm.value = data.data.nm
+            icon.value = data.data.icon
+            unit.value = data.data.unit
+            x0.value = data.data.x0
+            max.value = data.data.max
+            min.value = data.data.min
+            displayModal.value = true
+        }
+        const saveParameter = async () => {
+            const data = {
+                nm: nm.value,
+                icon: icon.value,
+                unit: unit.value,
+                x0: x0.value,
+                max: max.value,
+                min: min.value
+            }
+            console.log(data)
+            await store.dispatch('putId', { route: `device`, data: { data, index, s: s.value[index] }, id: id.value })
+            displayModal.value = false
         }
         const hideDialog = () => {
             id.value = null
@@ -167,12 +232,17 @@ export default {
             deleteDeviceDialog.value = true;
         }
         const saveDevice = async () => {
+            // CONTINUAR AQUI ################################################################
+            // FALTA ARREGLAR EL ENVIO DE DATOS DATA, INDEX, S: DEVICE DATA VALUE S INDEX
+            // ##########################################################################
+            console.log(index)
             submitted.value = true
             if (!id.value) {
                 await store.dispatch('post', { data: {mac: mac.value, place: place.value, fixed: fixed.value}, route: 'device' })
                 toast.add({severity:'success', summary: 'Dispositivo creado', detail:'Se registro el nuevo dispositivo', life: 3000})
             } else {
-                await store.dispatch('putId', { data: {mac: mac.value, place: place.value, fixed: fixed.value}, route: 'device', id: id.value})
+                // await store.dispatch('putId', { data: {mac: mac.value, place: place.value, fixed: fixed.value}, route: 'device', id: id.value})
+                await store.dispatch('putId', { route: `device`, data: { data:{ mac: mac.value, place: place.value }, s: s.value }, id: id.value })
                 toast.add({severity:'success', summary: 'Dispositivo actualizado', detail:'Se actualizo el dispositivo', life: 3000})
             }
             deviceDialog.value = false;
@@ -216,9 +286,9 @@ export default {
             dt.value.exportCSV();
         }
 
-        return { devices, mac, place, fixed, parameters, dt, deviceDialog, deleteDeviceDialog, deleteDevicesDialog,
+        return { devices, mac, place, fixed, s, parameters, dt, deviceDialog, deleteDeviceDialog, deleteDevicesDialog,
             selectedProducts, filters, submitted, openNew, hideDialog, saveDevice, editDevice, confirmDeleteDevice, deleteDevice, 
-            findIndexById, createId, exportCSV}
+            findIndexById, createId, exportCSV, selectedParameter, saveParameter, displayModal, nm, icon, unit, x0, max, min}
     }
 }
 </script>

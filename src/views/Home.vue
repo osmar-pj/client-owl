@@ -1,10 +1,15 @@
 <template>
     <Menubar :model="items">
         <template #start>
-            <router-link to="/">OWL</router-link>
+            <router-link to="/">
+                <img class="w-9rem" src="../assets/isologo.svg" alt="">
+            </router-link>
         </template>
         <template #end>
-            <Avatar icon="pi pi-user" class="mr-2" shape="circle"/>
+            <div class="flex align-items-center">
+                <h4 class="mr-3 text-gray-500"> {{  store.state.user.user  }} </h4>
+                <Avatar icon="pi pi-user text-orange-500" class="mr-2" shape="circle"/>
+            </div>
         </template>
     </Menubar>
     <div>
@@ -24,41 +29,14 @@ export default {
 
         const items = ref([
             {
-                label: 'Users',
+                label: 'Usuarios',
                 icon: 'pi pi-fw pi-user',
-                items: [
-                    {
-                        label: 'New',
-                        icon: 'pi pi-fw pi-user-plus',
-                    },
-                    {
-                        label: 'Delete',
-                        icon: 'pi pi-fw pi-user-minus',
-                    },
-                    {
-                        label: 'Search',
-                        icon: 'pi pi-fw pi-users',
-                        items: [
-                            {
-                                label: 'Filter',
-                                icon: 'pi pi-fw pi-filter',
-                                items: [
-                                    {
-                                        label: 'Print',
-                                        icon: 'pi pi-fw pi-print'
-                                    }
-                                ]
-                            },
-                            {
-                                icon: 'pi pi-fw pi-bars',
-                                label: 'List'
-                            }
-                        ]
-                    }
-                ]
+                command: () => {
+                    router.push('/users')
+                }
             },
             {
-                label: 'Devices',
+                label: 'Dispositivos',
                 icon: 'pi pi-fw pi-file',
                 items: [
                     {
@@ -81,7 +59,7 @@ export default {
                 ]
             },
             {
-                label: 'Parameters',
+                label: 'Parametros',
                 icon: 'pi pi-fw pi-database',
                 items: [
                     {
@@ -101,7 +79,7 @@ export default {
                 ]
             },
             {
-                label: 'Config',
+                label: 'Configuración',
                 icon: 'pi pi-fw pi-pencil',
                 items:[
                     {
@@ -118,14 +96,16 @@ export default {
                             router.push('/config/set/mac')
                         }
                     }
-                ]
+                ],
+                // visible: store.state.user.user === "Admin"
             },
             {
-                label: 'Registrar',
+                label: 'Registro',
                 icon: 'pi pi-fw pi-sign-up',
                 command: () => {
                     router.push('/register')
-                }
+                },
+                visible: store.state.user.user === "Admin"
             },
             {
                 label: 'Salir',
@@ -137,7 +117,7 @@ export default {
             }
         ])
 
-        return { items}
+        return { items, store }
     }
 }
 </script>

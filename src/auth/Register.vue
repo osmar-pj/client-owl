@@ -11,21 +11,26 @@
 
                 <div>
                     <label for="name" class="block text-900 font-medium mb-2">Nombre</label>
-                    <InputText id="name" type="text" class="w-full mb-3" v-model="name" />
+                    <!-- <InputText id="name" type="text" class="w-full mb-3" v-model="name" /> -->
+                    <input type="text" class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-yellow-500 w-full mb-3" v-model="name">
 
                     <label for="lastname" class="block text-900 font-medium mb-2">Apellido</label>
-                    <InputText id="lastname" type="text" class="w-full mb-3" v-model="lastname" />
+                    <!-- <InputText id="lastname" type="text" class="w-full mb-3" v-model="lastname" /> -->
+                    <input type="text" class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-yellow-500 w-full mb-3" v-model="lastname">
 
                     <label for="Celular" class="block text-900 font-medium mb-2">Celular</label>
-                    <InputText id="celular" type="text" class="w-full mb-3" v-model="celular" />
+                    <!-- <InputText id="celular" type="text" class="w-full mb-3" v-model="celular" /> -->
+                    <input type="text" class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-yellow-500 w-full mb-3" v-model="mobile">
 
                     <label for="email" class="block text-900 font-medium mb-2">Email</label>
-                    <InputText id="email" type="text" class="w-full mb-3" v-model="email" />
+                    <!-- <InputText id="email" type="text" class="w-full mb-3" v-model="email" /> -->
+                    <input type="text" class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-yellow-500 w-full mb-3" v-model="email">
 
                     <label for="password" class="block text-900 font-medium mb-2">Password</label>
-                    <InputText id="password" type="password" class="w-full mb-3" v-model="password" />
+                    <!-- <InputText id="password" type="password" class="w-full mb-3" v-model="password" /> -->
+                    <input type="password" class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-yellow-500 w-full mb-3" v-model="password">
 
-                    <Button label="Sign Up" icon="pi pi-user" class="w-full" @click.prevent="register" ></Button>
+                    <Button label="Sign Up" icon="pi pi-user" class="w-full bg-yellow-500 border-yellow-400" @click.prevent="register" ></Button>
                 </div>
             </div>
         </div>
@@ -48,20 +53,20 @@ export default {
 
         const name = ref('')
         const lastname = ref('')
-        const celular = ref('')
+        const mobile = ref('')
         const email = ref('')
         const password = ref('')
         const user = ref({})
 
         const register = async () => {
             try {
-                await store.dispatch('register', { name: name.value, lastname: lastname.value, celular: celular.value, email: email.value, password: password.value, roles: ['moderator', 'user'] })
+                await store.dispatch('register', { name: name.value, lastname: lastname.value, mobile: mobile.value, email: email.value, password: password.value, roles: ['moderator', 'user'] })
                 router.replace('/')
             } catch (error) {
                 console.error(error)
             }
         }
-        return { name, lastname, email, password, celular, user, register }
+        return { name, lastname, email, password, mobile, user, register }
     }
 }
 </script>
