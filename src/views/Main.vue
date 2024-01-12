@@ -25,8 +25,8 @@
                             <i :class="`pi pi-mobile ${s.value ? 'text-green-500' : 'text-red-500'} text-5xl`" v-if="s.type == 'sd'" ></i>
                             <p v-if="s.type == 'aa'"> <span class="text-3xl font-medium"> {{ (s.value + s.x0).toFixed(1) }} </span> <span> {{ s.unit }} </span> </p>
                             <Slider v-if="s.type == 'aa'" v-model="s.value"  @slideend="publish(d.mac, s)" :disabled="!notification"/>
-                            <p v-if="s.type == 'sa'" :class="`${!notification ? 'text-gray-300' : ''}`" > <span class="text-5xl font-semibold"> {{ (s.value + s.x0).toFixed(1) }} </span> <span> {{ s.unit }} </span> </p>
-                            <i v-if="((s.value > s.max || s.value < s.min) && s.type == 'sa' )" :class="`pi pi-exclamation-triangle text-yellow-300 animation-duration-500 scalein animation-iteration-infinite`"></i>
+                            <p v-if="s.type == 'sa'" :class="`${!notification ? 'text-gray-300' : ''}`" > <span class="text-5xl font-semibold"> {{ (s.value).toFixed(1) }} </span> <span> {{ s.unit }} </span> </p>
+                            <i v-if="(( s.ah || s.al) && s.type == 'sa' )" :class="`pi pi-exclamation-triangle text-yellow-300 animation-duration-500 scalein animation-iteration-infinite`"></i>
                             <!-- <Button v-if="s.type == 'ad'" icon="pi pi-power-off" class="p-button-rounded p-button-outlined p-button-success" /> -->
                         </div>
                         <div class="flex align-items-center justify-content-center mt-2">
@@ -40,60 +40,54 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, inject, onMounted, computed, effect } from 'vue'
 import { useStore } from 'vuex'
-import { Subject, interval } from 'rxjs'
+import { Subject } from 'rxjs'
 
-export default {
-    setup() {
-        const store = useStore()
-        const socket = inject('socket')
-        
-        const device$ = new Subject()
-        
-        const devices = ref([])
-        const conexion = ref(false)
-        let device = {
-            mac: '',
-            s: [],
-            updatedAt: new Date()
-        }
+const store = useStore()
+const socket = inject('socket')
+
+const device$ = new Subject()
+
+const devices = ref([])
+const conexion = ref(false)
+let device = {
+    mac: '',
+    s: [],
+    updatedAt: new Date()
+}
 
 
-        socket.on('deviceData', data => {
-            device = devices.value.find(d => d.mac === data.mac)
-            device ? updateDevice(device, data) : console.log('no device')
-        })
+socket.on('deviceData', data => {
+    device = devices.value.find(d => d.mac === data.mac)
+    device ? updateDevice(device, data) : console.log('no device')
+})
 
-        onMounted(async () => {
-            devices.value = await store.dispatch('get', {route: 'device'})
-            // console.log(devices.value)
-        })
+onMounted(async () => {
+    devices.value = await store.dispatch('get', {route: 'device'})
+    // console.log(devices.value)
+})
 
-        const updateDevice = (device, data) => {
-            device.s = data.s
-            device.updatedAt = data.updatedAt
-            device$.next(device)
-        }
+const updateDevice = (device, data) => {
+    device.s = data.s
+    device.updatedAt = data.updatedAt
+    device$.next(device)
+}
 
-        // computes notificacion variable
-        const interval = setInterval(() => {
-            conexion.value = (new Date() - new Date(device.updatedAt))/1000 < 10
-        }, 1000)
+// computes notificacion variable
+const interval = setInterval(() => {
+    conexion.value = (new Date() - new Date(device.updatedAt))/1000 < 10
+}, 5000)
 
-        effect(() => {
-            return conexion.value
-        })
-        const notification = computed(() => {
-            return conexion.value
-        })
+effect(() => {
+    return conexion.value
+})
+const notification = computed(() => {
+    return conexion.value
+})
 
-        const publish = (mac, s, i) => {
-            store.dispatch('post', {route: `help/device/${mac}`, data: {value: { data: s, index: i }}})
-        }
-
-        return { devices, publish, notification }
-    }
+const publish = (mac, s, i) => {
+    store.dispatch('post', {route: `help/device/${mac}`, data: {value: { data: s, index: i }}})
 }
 </script>
